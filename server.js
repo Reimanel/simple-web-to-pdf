@@ -11,6 +11,9 @@ const upload = multer();
 const OUTPUT_DIR = path.join(__dirname, "output");
 const TMP_DIR = path.join(os.tmpdir(), "simple-web-to-pdf");
 
+// IMPORTANT: adjust this path to match your system
+const chrome = "/usr/bin/chromium-browser"; // or '/usr/bin/chromium'
+
 function safeName(s) {
   return String(s).replace(/[^a-zA-Z0-9]/g, "_").slice(0,40) + '_' + Date.now();
 }
@@ -23,11 +26,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 function chromeCmd(url, pdfPath) {
-  const chrome = path.join(__dirname, "node_modules/chromium/lib/chromium/chrome-linux/chrome");
   return `\"${chrome}\" --headless --no-sandbox --disable-gpu --disable-web-security --disable-software-rasterizer --run-all-compositor-stages-before-draw --virtual-time-budget=5000 --font-render-hinting=none --print-to-pdf=\"${pdfPath}\" ${url}`;
 }
 
-// Bulk/Single UI handler
 app.post("/bulk", upload.none(), async (req, res) => {
   let urls = req.body.urls || "";
   urls = urls.split(/[\n,]+/).map(u => u.trim()).filter(Boolean);
@@ -47,7 +48,6 @@ app.post("/bulk", upload.none(), async (req, res) => {
       idx++;
     } catch(e) { fs.writeFileSync(path.join(tmp,"fail_"+name+".txt"),`FAILED: ${url}\n${e}`); }
   }
-  // Merge all into single zip
   const zipPath = path.join(OUTPUT_DIR,task+".zip");
   const out = fs.createWriteStream(zipPath);
   const archive = archiver('zip',{zlib:{level:9}});
@@ -60,7 +60,6 @@ app.post("/bulk", upload.none(), async (req, res) => {
   archive.finalize();
 });
 
-// Simple health endpoint
 app.get("/health",(req,res)=>res.json({ok:true,time:new Date().toISOString()}));
 
-app.listen(4000,()=>console.log("Simple Web-to-PDF server running on :4000"));
+app.listen(4000,()=>console.log("Simple Web-to-PDF server running on :4000 (Chromium system binary)"));
