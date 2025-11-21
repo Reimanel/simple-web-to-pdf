@@ -3,31 +3,81 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🌐 Simple Web-to-PDF Bulk Tool</title>
+  <title>🌈 Simple Web-to-PDF</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <style>
     body {font-family: 'Inter',sans-serif; background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); min-height: 100vh; margin:0;display:flex;align-items:center;justify-content:center;}
     .center {
-      background:rgba(255,255,255,0.96); box-shadow:0 8px 48px #6c54c948; border-radius:21px; padding:36px 26px;
-      max-width:430px;width:97vw;margin:3vw; display:flex;flex-direction:column;align-items:center;animation:fade-in .7s;
+      background:rgba(255,255,255,0.97); box-shadow:0 8px 48px #6c54c948; border-radius:22px; padding:42px 30px 32px 30px;
+      max-width:455px;width:97vw;margin:3vw; display:flex;flex-direction:column;align-items:center;animation:fade-in .7s;
     }
-    @keyframes fade-in{from{opacity:0;transform:translateY(32px);}to{opacity:1;transform:translateY(0);}}
-    h2{color:#667eea;margin-bottom:10px;font-size:2em;font-weight:800;letter-spacing:.5px}
-    textarea{width:100%;min-height:110px;font-size:15px;border-radius:8px;border:1.2px solid #dedeeb;padding:11px;margin-bottom:20px;background:rgba(239,242,255,.64);resize:vertical;}
-    button{background:linear-gradient(90deg,#667eea 60%,#764ba2 100%);color:#fff;font-weight:700;padding:15px 0;border:none;border-radius:8px;width:100%;font-size:1em;margin-bottom:8px; cursor:pointer;transition:.2s;}
+    @keyframes fade-in{from{opacity:0;transform:translateY(34px);}to{opacity:1;transform:translateY(0);}}
+    h1,h2{color:#667eea;margin-bottom:10px;font-weight:800;letter-spacing:.5px}
+    textarea,input[type=url] {width:100%;padding:14px 13px;font-size:1em;border-radius:8px;border:1.2px solid #dedeeb;margin-bottom:16px;background:rgba(239,242,255,.68);resize:vertical;}
+    button{background:linear-gradient(90deg,#667eea 60%,#764ba2 100%);color:#fff;font-weight:700;padding:15px 0;border:none;border-radius:8px;width:100%;font-size:1.09em;margin-bottom:11px; cursor:pointer;transition:.2s;letter-spacing:.1px;}
     button:hover{box-shadow:0 2px 18px #667eea90; transform: translateY(-2px);}
-    label{color:#5351c3;margin-bottom:7px;display:block;font-size:1em;font-weight:600;text-align:left;width:100%;}
-    .note{font-size:.98em;color:#888;text-align:center;margin-top:12px;}
-    .badge{background:linear-gradient(90deg,#667eea 60%,#764ba2 100%);color:#fff;font-weight:600;border-radius:15px;padding:5px 18px;font-size:.97em;margin-bottom:17px;display:inline-block;}
+    label{color:#5351c3;margin-bottom:8px;display:block;font-size:.99em;font-weight:650;text-align:left;width:100%;}
+    .note{font-size:.98em;color:#888;text-align:center;margin-top:5px;}
+    .badge{background:linear-gradient(90deg,#667eea 60%,#764ba2 100%);color:#fff;font-weight:600;border-radius:15px;padding:5px 18px;font-size:.96em;margin-bottom:16px;display:inline-block;box-shadow:0 1.5px 8px #9b78e222;}
+    .toggle-boxes {display:flex;gap:18px;margin:14px 0 18px 0;}
+    .toggle-btn {flex:1;}
+    .toggle-btn input{display:none;}
+    .toggle-btn label{
+      display:block;padding:12px 0;background:#eee;border-radius:13px;text-align:center;cursor:pointer;
+      font-weight:700;color:#8779c6;transition:.23s;border:2px solid transparent;box-shadow:0 .5px 6px #6c54c920;
+    }
+    .toggle-btn input:checked+label {background:linear-gradient(95deg,#667eea 10%,#764ba2 89%);color:#fff;border-color:#667eea;box-shadow:0 2.5px 15px #667eea33;}
+    @media(max-width:700px){ .center {padding:25px 6vw;} h1{font-size:1.3em;} }
   </style>
 </head>
 <body>
-  <form class="center" action="/bulk" method="post">
-    <span class="badge">BULK Merge Mode</span>
-    <h2>🌐 Bulk Web-to-PDF</h2>
-    <label for="urls">Enter one or more URLs (one per line):</label>
-    <textarea required name="urls" placeholder="https://example.com\nhttps://example.com/news\nhttps://another.com/page"></textarea>
-    <button type="submit">🚀 Convert & Download ZIP (PDFs)</button>
-    <div class="note">All PDFs merged into one ZIP file.<br/>Ultra-robust. No bloat. Portfolio-ready.</div>
+  <form class="center" id="pdfForm">
+    <span class="badge">Web-to-PDF Professional</span>
+    <h1>🌐 Webpage(s) to PDF</h1>
+    <div class="toggle-boxes">
+      <div class="toggle-btn"><input type="radio" name="mode" value="single" id="modeSingle" checked><label for="modeSingle">Single</label></div>
+      <div class="toggle-btn"><input type="radio" name="mode" value="bulk" id="modeBulk"><label for="modeBulk">Bulk</label></div>
+    </div>
+    <div class="form-single">
+      <label for="singleUrl">Page URL:</label>
+      <input type="url" id="singleUrl" name="url" autocomplete="off" placeholder="https://example.com" required>
+    </div>
+    <div class="form-bulk" style="display:none">
+      <label for="bulkUrls">Multiple URLs (one per line):</label>
+      <textarea id="bulkUrls" name="urls" autocomplete="off" placeholder="https://example.com/page1\nhttps://another.com/page2"></textarea>
+    </div>
+    <button type="submit">🚀 Convert to PDF</button>
+    <div class="note">Fast. Free. Beautiful. Perfect for your portfolio!</div>
   </form>
+  <script>
+    const pdfForm = document.getElementById('pdfForm');
+    const modeSingle = document.getElementById('modeSingle');
+    const modeBulk = document.getElementById('modeBulk');
+    const singleBlock = document.querySelector('.form-single');
+    const bulkBlock = document.querySelector('.form-bulk');
+    pdfForm.addEventListener('change',()=>{
+      if(modeSingle.checked){ singleBlock.style.display=''; bulkBlock.style.display='none'; }
+      else { singleBlock.style.display='none'; bulkBlock.style.display=''; }
+    });
+    pdfForm.addEventListener('submit',function(e){
+      e.preventDefault();
+      const isBulk = modeBulk.checked;
+      const action = isBulk ? '/bulk' : '/single';
+      const data = new FormData();
+      if(isBulk) data.append('urls',document.getElementById('bulkUrls').value);
+      else data.append('url',document.getElementById('singleUrl').value);
+      fetch(action,{method:'POST',body:data}).then(async r=>{
+        if(r.ok){
+          const disp = r.headers.get('Content-Disposition');
+          const filename = disp ? disp.split('filename=')[1].replace(/"/g,'').trim() : 'document.pdf';
+          const blob = await r.blob();
+          const a = document.createElement('a');
+          a.href = window.URL.createObjectURL(blob); a.download=filename; a.click();
+        }else{
+          alert('Failed: '+(await r.text()));
+        }
+      }).catch(err=>alert('Error: '+err));
+    });
+  </script>
 </body>
 </html>
