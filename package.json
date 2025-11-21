@@ -1,0 +1,17 @@
+{
+  "name": "simple-web-to-pdf",
+  "version": "1.0.0",
+  "description": "Zero-bloat webapp to bulk convert any URL list to a single PDF using Headless Chromium CLI. Tip: Works perfectly on Contabo VPS.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "chromium": "^4.0.0",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "archiver": "^7.0.0"
+  },
+  "author": "Marlon Romanelli",
+  "license": "MIT"
+}
