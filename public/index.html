@@ -28,6 +28,10 @@
       font-weight:700;color:#8779c6;transition:.23s;border:2px solid transparent;box-shadow:0 .5px 6px #6c54c920;
     }
     .toggle-btn input:checked+label {background:linear-gradient(95deg,#667eea 10%,#764ba2 89%);color:#fff;border-color:#667eea;box-shadow:0 2.5px 15px #667eea33;}
+    #feedback {margin:11px 0 3px 0; min-height:26px; font-size:1em; color:#6454ba; background:#fafbff;border-radius:8px; padding:5px 6px;box-shadow:0 1px 2px #667eea1c; display:none; text-align:center;}
+    #feedback.error{color:#ae2338;background:#ffe8e4;}
+    #feedback.success{color:#2c934b;background:#e8ffe8;}
+    #feedback.loading{color:#777;background:#faedff;}
     @media(max-width:700px){ .center {padding:25px 6vw;} h1{font-size:1.3em;} }
   </style>
 </head>
@@ -47,6 +51,7 @@
       <label for="bulkUrls">Multiple URLs (one per line):</label>
       <textarea id="bulkUrls" name="urls" autocomplete="off" placeholder="https://example.com/page1\nhttps://another.com/page2"></textarea>
     </div>
+    <div id="feedback"></div>
     <button type="submit">🚀 Convert to PDF</button>
     <div class="note">Fast. Free. Beautiful. Perfect for your portfolio!</div>
   </form>
@@ -58,6 +63,14 @@
     const bulkBlock = document.querySelector('.form-bulk');
     const singleUrl = document.getElementById('singleUrl');
     const bulkUrls = document.getElementById('bulkUrls');
+    const feedback = document.getElementById('feedback');
+    function showFeedback(msg,type){
+      feedback.textContent = msg;
+      feedback.className = '';
+      if(type) feedback.classList.add(type);
+      feedback.style.display='block';
+    }
+    function clearFeedback(){ feedback.textContent=''; feedback.style.display='none'; }
     function updateRequired() {
       if(modeSingle.checked){
         singleUrl.required = true;
@@ -71,14 +84,15 @@
       if(modeSingle.checked){ singleBlock.style.display=''; bulkBlock.style.display='none'; }
       else { singleBlock.style.display='none'; bulkBlock.style.display=''; }
       updateRequired();
+      clearFeedback();
     });
     updateRequired();
     pdfForm.addEventListener('submit',function(e){
       updateRequired();
-      // Validate again: Chrome UI bug workaround.
       if(modeSingle.checked && !singleUrl.value.trim()) { singleUrl.focus(); e.preventDefault(); return; }
       if(modeBulk.checked && !bulkUrls.value.trim()) { bulkUrls.focus(); e.preventDefault(); return; }
       e.preventDefault();
+      showFeedback('Processing your request... This may take up to 1 minute.','loading');
       const isBulk = modeBulk.checked;
       const action = isBulk ? '/bulk' : '/single';
       const data = new FormData();
@@ -86,15 +100,19 @@
       else data.append('url',singleUrl.value);
       fetch(action,{method:'POST',body:data}).then(async r=>{
         if(r.ok){
+          showFeedback('Download ready!','success');
           const disp = r.headers.get('Content-Disposition');
           const filename = disp ? disp.split('filename=')[1].replace(/"/g,'').trim() : 'document.pdf';
           const blob = await r.blob();
           const a = document.createElement('a');
           a.href = window.URL.createObjectURL(blob); a.download=filename; a.click();
+          setTimeout(clearFeedback,4000);
         }else{
-          alert('Failed: '+(await r.text()));
+          showFeedback('Failed: '+(await r.text()),'error');
         }
-      }).catch(err=>alert('Error: '+err));
+      }).catch(err=>{
+        showFeedback('Error: '+err,'error');
+      });
     });
   </script>
 </body>
