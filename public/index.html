@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🌈 Simple Web-to-PDF</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <style>
     body {font-family: 'Inter',sans-serif; background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); min-height: 100vh; margin:0;display:flex;align-items:center;justify-content:center;}
@@ -40,7 +41,7 @@
     </div>
     <div class="form-single">
       <label for="singleUrl">Page URL:</label>
-      <input type="url" id="singleUrl" name="url" autocomplete="off" placeholder="https://example.com" required>
+      <input type="url" id="singleUrl" name="url" autocomplete="off" placeholder="https://example.com">
     </div>
     <div class="form-bulk" style="display:none">
       <label for="bulkUrls">Multiple URLs (one per line):</label>
@@ -55,17 +56,34 @@
     const modeBulk = document.getElementById('modeBulk');
     const singleBlock = document.querySelector('.form-single');
     const bulkBlock = document.querySelector('.form-bulk');
+    const singleUrl = document.getElementById('singleUrl');
+    const bulkUrls = document.getElementById('bulkUrls');
+    function updateRequired() {
+      if(modeSingle.checked){
+        singleUrl.required = true;
+        bulkUrls.required = false;
+      }else{
+        singleUrl.required = false;
+        bulkUrls.required = true;
+      }
+    }
     pdfForm.addEventListener('change',()=>{
       if(modeSingle.checked){ singleBlock.style.display=''; bulkBlock.style.display='none'; }
       else { singleBlock.style.display='none'; bulkBlock.style.display=''; }
+      updateRequired();
     });
+    updateRequired();
     pdfForm.addEventListener('submit',function(e){
+      updateRequired();
+      // Validate again: Chrome UI bug workaround.
+      if(modeSingle.checked && !singleUrl.value.trim()) { singleUrl.focus(); e.preventDefault(); return; }
+      if(modeBulk.checked && !bulkUrls.value.trim()) { bulkUrls.focus(); e.preventDefault(); return; }
       e.preventDefault();
       const isBulk = modeBulk.checked;
       const action = isBulk ? '/bulk' : '/single';
       const data = new FormData();
-      if(isBulk) data.append('urls',document.getElementById('bulkUrls').value);
-      else data.append('url',document.getElementById('singleUrl').value);
+      if(isBulk) data.append('urls',bulkUrls.value);
+      else data.append('url',singleUrl.value);
       fetch(action,{method:'POST',body:data}).then(async r=>{
         if(r.ok){
           const disp = r.headers.get('Content-Disposition');
